@@ -948,6 +948,40 @@ mod test {
 
     #[cfg(all(feature = "blocking", feature = "async"))]
     #[tokio::test]
+    async fn test_scripthash_utxos() {
+        let (blocking_client, async_client) = setup_clients().await;
+
+        let address = BITCOIND
+            .client
+            .get_new_address(Some("test"), Some(AddressType::Legacy))
+            .unwrap()
+            .assume_checked();
+        let txid = BITCOIND
+            .client
+            .send_to_address(
+                &address,
+                Amount::from_sat(1000),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap();
+        let _miner = MINER.lock().await;
+        generate_blocks_and_wait(1);
+
+        let expected_utxo = BITCOIND.client.get_tx_out(&txid, 1, None).unwrap().unwrap();
+        // let script = &expected_tx.output[0].script_pubkey;
+        let scripthash_utxos: Vec<Output> = blocking_client.scripthash_utxos(script).unwrap();
+        let scripthash_utxos_async: Vec<Output> =
+            blocking_client.scripthash_utxos(script).await.unwrap();
+        // assert_eq!(scripthash_utxos, scripthash_txs_txids_async);
+    }
+
+    #[cfg(all(feature = "blocking", feature = "async"))]
+    #[tokio::test]
     async fn test_get_blocks() {
         let (blocking_client, async_client) = setup_clients().await;
         let start_height = BITCOIND.client.get_block_count().unwrap();

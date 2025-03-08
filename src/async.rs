@@ -30,7 +30,7 @@ use reqwest::{header, Client, Response};
 
 use crate::api::AddressStats;
 use crate::{
-    BlockStatus, BlockSummary, Builder, Error, MerkleProof, OutputStatus, Tx, TxStatus,
+    BlockStatus, BlockSummary, Builder, Error, MerkleProof, Output, OutputStatus, Tx, TxStatus,
     BASE_BACKOFF_MILLIS, RETRYABLE_ERROR_CODES,
 };
 
@@ -423,6 +423,13 @@ impl<S: Sleeper> AsyncClient<S> {
             None => format!("/scripthash/{:x}/txs", script_hash),
         };
 
+        self.get_response_json(&path).await
+    }
+
+    /// Get the list of unspent transaction outputs associated with the address/scripthash.
+    pub async fn scripthash_utxos(&self, script: &Script) -> Result<Vec<Output>, Error> {
+        let script_hash = sha256::Hash::hash(script.as_bytes());
+        let path = format!("/scripthash/{:x}/utxo", script_hash);
         self.get_response_json(&path).await
     }
 

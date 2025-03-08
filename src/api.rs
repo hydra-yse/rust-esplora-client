@@ -82,6 +82,14 @@ pub struct Tx {
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct Output {
+    pub txid: Txid,
+    pub vout: u64,
+    pub status: TxStatus,
+    pub value: u64,
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct BlockTime {
     pub timestamp: u64,
     pub height: u32,

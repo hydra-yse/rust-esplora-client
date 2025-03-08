@@ -31,7 +31,7 @@ use bitcoin::{
 
 use crate::api::AddressStats;
 use crate::{
-    BlockStatus, BlockSummary, Builder, Error, MerkleProof, OutputStatus, Tx, TxStatus,
+    BlockStatus, BlockSummary, Builder, Error, MerkleProof, Output, OutputStatus, Tx, TxStatus,
     BASE_BACKOFF_MILLIS, RETRYABLE_ERROR_CODES,
 };
 
@@ -357,6 +357,13 @@ impl BlockingClient {
             Some(last_seen) => format!("/scripthash/{:x}/txs/chain/{}", script_hash, last_seen),
             None => format!("/scripthash/{:x}/txs", script_hash),
         };
+        self.get_response_json(&path)
+    }
+
+    /// Get the list of unspent transaction outputs associated with the address/scripthash.
+    pub fn scripthash_utxos(&self, script: &Script) -> Result<Vec<Output>, Error> {
+        let script_hash = sha256::Hash::hash(script.as_bytes());
+        let path = format!("/scripthash/{:x}/utxo", script_hash);
         self.get_response_json(&path)
     }
 
